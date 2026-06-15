@@ -470,43 +470,6 @@ input[type="text"]::placeholder { color: var(--dim); }
         </div>
       </div>
 
-      <!-- Surf report (visible on mobile here, hidden on desktop — shown in sidebar) -->
-      <div class="surf-report" id="surfReportMobile">
-        <div class="section-title">Surf report <span>Placeholder data · BOM + AI integration coming</span></div>
-        <div class="report-grid">
-          <div class="report-item">
-            <div class="report-label">Wave Height</div>
-            <div class="report-val good" id="rWaveH">1.2m</div>
-            <div class="report-sub">Overhead sets</div>
-          </div>
-          <div class="report-item">
-            <div class="report-label">Wave Quality</div>
-            <div class="report-val good" id="rWaveQ">★★★☆</div>
-            <div class="report-sub">Clean &amp; punchy</div>
-          </div>
-          <div class="report-item">
-            <div class="report-label">Wind</div>
-            <div class="report-val" id="rWind">12 kts SE</div>
-            <div class="report-sub">Light offshore</div>
-          </div>
-          <div class="report-item">
-            <div class="report-label">Wind Speed</div>
-            <div class="report-val" id="rWindSpd">12 kts</div>
-            <div class="report-sub">Freshening to 18</div>
-          </div>
-          <div class="report-item">
-            <div class="report-label">Tide</div>
-            <div class="report-val" id="rTide">+0.4m ↑</div>
-            <div class="report-sub">Incoming · High 12:30</div>
-          </div>
-          <div class="report-item">
-            <div class="report-label">Crowd</div>
-            <div class="report-val warn" id="rCrowd">Moderate</div>
-            <div class="report-sub">~15 surfers</div>
-          </div>
-        </div>
-      </div>
-
     </div>
     <!-- end video column -->
 
@@ -542,19 +505,16 @@ input[type="text"]::placeholder { color: var(--dim); }
         </div>
       </div>
 
-      <!-- Surf report desktop (hidden on mobile) -->
-      <div class="s-section" id="surfReportDesktop" style="display:none">
+      <!-- Surf report — single card, always visible -->
+      <div class="s-section">
         <div class="section-title">Surf report <span style="font-size:0.52rem;color:var(--dim)">Placeholder · BOM + AI coming</span></div>
         <div class="report-grid">
           <div class="report-item"><div class="report-label">Wave Height</div><div class="report-val good">1.2m</div><div class="report-sub">Overhead sets</div></div>
           <div class="report-item"><div class="report-label">Quality</div><div class="report-val good">★★★☆</div><div class="report-sub">Clean &amp; punchy</div></div>
           <div class="report-item"><div class="report-label">Wind</div><div class="report-val">12 kts SE</div><div class="report-sub">Light offshore</div></div>
+          <div class="report-item"><div class="report-label">Wind Speed</div><div class="report-val">12 kts</div><div class="report-sub">Freshening to 18</div></div>
           <div class="report-item"><div class="report-label">Tide</div><div class="report-val">+0.4m ↑</div><div class="report-sub">Incoming · High 12:30</div></div>
           <div class="report-item"><div class="report-label">Crowd</div><div class="report-val warn">Moderate</div><div class="report-sub">~15 surfers</div></div>
-          <div class="report-item"><div class="report-label">Wind Speed</div><div class="report-val">12 kts</div><div class="report-sub">Freshening</div></div>
-        </div>
-        <div style="margin-top:0.5rem">
-          <button class="small-btn" onclick="fakeReport()">Refresh placeholder data</button>
         </div>
       </div>
 
