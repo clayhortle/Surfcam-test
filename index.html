@@ -30,13 +30,7 @@
 }
 
 html { height: 100%; }
-body {
-  background: var(--ink);
-  color: var(--text);
-  font-family: var(--sans);
-  min-height: 100%;
-  overflow-x: hidden;
-}
+body { background: var(--ink); color: var(--text); font-family: var(--sans); min-height: 100%; overflow-x: hidden; }
 
 .hero-bg {
   position: fixed; inset: 0; z-index: 0; pointer-events: none;
@@ -46,26 +40,27 @@ body {
     var(--ink);
 }
 
-.wrap {
-  position: relative; z-index: 1;
-  max-width: 520px; margin: 0 auto; padding: 0 0 5rem;
-}
+/* ── Page shell ── */
+.page { position: relative; z-index: 1; min-height: 100vh; }
 
-/* ── Header ── */
+/* ── Top bar ── */
 .top-bar {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 1rem 1rem 0; margin-bottom: 1rem;
+  padding: 0.85rem 1.25rem; border-bottom: 1px solid var(--rim);
+  background: rgba(5,16,31,0.7); backdrop-filter: blur(8px);
+  position: sticky; top: 0; z-index: 100;
 }
 .logo { display: flex; align-items: center; gap: 0.5rem; }
-.logo-wave { width: 26px; height: 26px; }
-.logo-text { font-size: 0.95rem; font-weight: 800; letter-spacing: -0.02em; color: var(--white); }
+.logo-wave { width: 24px; height: 24px; }
+.logo-text { font-size: 0.9rem; font-weight: 800; letter-spacing: -0.02em; color: var(--white); }
 .logo-text em { color: var(--wave); font-style: normal; }
+.top-right { display: flex; align-items: center; gap: 0.75rem; }
 
 .live-pill {
   display: flex; align-items: center; gap: 6px;
-  font-family: var(--mono); font-size: 0.63rem; font-weight: 600;
+  font-family: var(--mono); font-size: 0.62rem; font-weight: 600;
   letter-spacing: 0.1em; text-transform: uppercase;
-  padding: 5px 11px; border-radius: 100px;
+  padding: 4px 10px; border-radius: 100px;
   background: rgba(0,212,170,0.1); border: 1px solid rgba(0,212,170,0.25);
   color: var(--wave); transition: all 0.3s;
 }
@@ -75,12 +70,27 @@ body {
 .live-pill:not(.offline):not(.loading) .pip { animation: livepulse 1.6s ease-in-out infinite; }
 @keyframes livepulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.3;transform:scale(0.8)} }
 
-/* ── Break name ── */
-.break-header { padding: 0 1rem 0.85rem; }
-.break-name { font-size: 2rem; font-weight: 800; letter-spacing: -0.04em; color: var(--white); line-height: 1; }
-.break-sub { font-size: 0.75rem; color: var(--dim); margin-top: 0.3rem; font-family: var(--mono); }
+/* ── Main layout: desktop 70/30, mobile stacked ── */
+.main-layout {
+  display: flex; flex-direction: column;
+}
+@media (min-width: 900px) {
+  .main-layout { flex-direction: row; align-items: flex-start; min-height: calc(100vh - 52px); }
+  .video-column { flex: 0 0 70%; min-width: 0; position: sticky; top: 52px; }
+  .sidebar { flex: 0 0 30%; min-width: 0; border-left: 1px solid var(--rim); overflow-y: auto; max-height: calc(100vh - 52px); }
+}
 
-/* ── Video ── */
+/* ── Video column ── */
+.video-column { background: #000; }
+
+.break-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.75rem 1rem; background: var(--deep); border-bottom: 1px solid var(--rim);
+}
+.break-name { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.03em; color: var(--white); line-height: 1; }
+.break-loc { font-family: var(--mono); font-size: 0.65rem; color: var(--dim); margin-top: 2px; }
+
+/* ── Video player ── */
 .video-wrap {
   position: relative; width: 100%; aspect-ratio: 16/9;
   background: #000; overflow: hidden;
@@ -88,267 +98,298 @@ body {
 video { width: 100%; height: 100%; display: block; object-fit: cover; }
 .video-wrap::after {
   content: ''; position: absolute; inset: 0; pointer-events: none;
-  background: linear-gradient(to bottom, rgba(5,16,31,0.3) 0%, transparent 25%, transparent 65%, rgba(5,16,31,0.75) 100%);
+  background: linear-gradient(to bottom, rgba(5,16,31,0.25) 0%, transparent 20%, transparent 70%, rgba(5,16,31,0.6) 100%);
 }
 .vid-stamp {
-  position: absolute; bottom: 0.8rem; left: 0.85rem; z-index: 2;
-  font-family: var(--mono); font-size: 0.68rem; color: rgba(255,255,255,0.55);
+  position: absolute; bottom: 0.75rem; left: 0.85rem; z-index: 2;
+  font-family: var(--mono); font-size: 0.65rem; color: rgba(255,255,255,0.55);
   letter-spacing: 0.05em; display: none;
 }
 .vid-stamp.on { display: block; }
 .vid-tag {
-  position: absolute; top: 0.7rem; left: 0.85rem; z-index: 2;
-  font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.08em;
+  position: absolute; top: 0.65rem; left: 0.85rem; z-index: 2;
+  font-family: var(--mono); font-size: 0.58rem; letter-spacing: 0.08em;
   text-transform: uppercase; color: rgba(255,255,255,0.45); display: none;
 }
 .vid-tag.on { display: block; }
 
-/* Overlay */
+/* ── Video overlay (no stream / error) ── */
 .vid-overlay {
   position: absolute; inset: 0; z-index: 3;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 0.6rem; background: rgba(5,16,31,0.88); backdrop-filter: blur(4px);
+  gap: 0; background: rgba(5,16,31,0.92); backdrop-filter: blur(4px);
   transition: opacity 0.4s, visibility 0.4s;
 }
 .vid-overlay.gone { opacity: 0; visibility: hidden; }
-.idle-icon { font-size: 2.6rem; animation: float 3s ease-in-out infinite; line-height: 1; }
-@keyframes float { 0%,100%{transform:translateY(0) rotate(-2deg)} 50%{transform:translateY(-8px) rotate(2deg)} }
-.idle-label { font-size: 0.78rem; color: var(--dim); text-align: center; max-width: 200px; line-height: 1.5; }
 
-/* Error state */
+/* Snapshot fallback */
+.snapshot-wrap { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 0.75rem; padding: 1.5rem; }
+.snapshot-img {
+  width: 100%; max-width: 400px; aspect-ratio: 16/9;
+  background: var(--panel); border-radius: 8px; border: 1px solid var(--rim);
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden; position: relative;
+}
+/* Placeholder "camera" graphic */
+.snapshot-img::before {
+  content: '📷'; font-size: 2.5rem; opacity: 0.3;
+}
+.snapshot-img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: none; }
+.snapshot-img img.loaded { display: block; }
+.snapshot-meta { text-align: center; }
+.snapshot-title { font-size: 0.9rem; font-weight: 700; color: var(--white); margin-bottom: 0.25rem; }
+.snapshot-time { font-family: var(--mono); font-size: 0.65rem; color: var(--dim); margin-bottom: 0.65rem; }
+.snapshot-actions { display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap; }
+
+.btn-refresh {
+  background: var(--panel); border: 1px solid var(--rim2); color: var(--text);
+  font-size: 0.75rem; font-weight: 600; padding: 7px 16px; border-radius: 8px;
+  cursor: pointer; transition: border-color 0.15s;
+}
+.btn-refresh:active { border-color: var(--wave); }
+
+.choose-btn {
+  background: var(--wave); color: var(--ink);
+  font-weight: 700; font-size: 0.75rem; padding: 7px 16px;
+  border-radius: 8px; cursor: pointer; border: none; display: inline-block;
+}
+.choose-btn:active { opacity: 0.85; }
+#fileInput { display: none; }
+
+/* Error hint */
 .error-hint {
-  display: none; flex-direction: column; align-items: center; gap: 0.35rem;
-  padding: 0 1.5rem; text-align: center;
+  display: none; flex-direction: column; align-items: center; gap: 0.3rem;
+  padding: 0 1.5rem; text-align: center; margin-top: 0.5rem;
 }
 .error-hint.show { display: flex; }
 .error-title { font-size: 0.8rem; color: var(--danger); font-weight: 600; }
-.error-tip { font-size: 0.72rem; color: var(--dim); line-height: 1.5; }
+.error-tip { font-size: 0.7rem; color: var(--dim); line-height: 1.5; }
 
-.choose-btn {
-  margin-top: 0.2rem; background: var(--wave); color: var(--ink);
-  font-weight: 700; font-size: 0.78rem; padding: 8px 20px;
-  border-radius: 100px; cursor: pointer; border: none; display: inline-block;
-  transition: transform 0.1s, opacity 0.15s;
-}
-.choose-btn:active { transform: scale(0.95); opacity: 0.85; }
-#fileInput { display: none; }
-
-/* ── Conditions ── */
+/* ── Conditions bar (below video) ── */
 .conditions {
   display: grid; grid-template-columns: repeat(4,1fr);
   gap: 1px; background: var(--rim);
   border-top: 1px solid var(--rim); border-bottom: 1px solid var(--rim);
-  margin-bottom: 1.1rem;
 }
-.cond { background: var(--deep); padding: 0.7rem 0.4rem; text-align: center; }
-.cond-val { font-family: var(--mono); font-size: 1rem; font-weight: 700; color: var(--white); line-height: 1; margin-bottom: 0.2rem; }
+.cond { background: var(--deep); padding: 0.65rem 0.4rem; text-align: center; }
+.cond-val { font-family: var(--mono); font-size: 0.95rem; font-weight: 700; color: var(--white); line-height: 1; margin-bottom: 0.15rem; }
 .cond-val.lit { color: var(--wave); }
-.cond-label { font-family: var(--mono); font-size: 0.52rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--dim); }
+.cond-label { font-family: var(--mono); font-size: 0.5rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--dim); }
 
-/* ── Section wrapper ── */
-.section { padding: 0 1rem; margin-bottom: 1.25rem; }
-.eyebrow { font-family: var(--mono); font-size: 0.58rem; text-transform: uppercase; letter-spacing: 0.14em; color: var(--dim); margin-bottom: 0.55rem; }
-.rule { height: 1px; background: var(--rim); margin: 0 1rem 1.25rem; }
-
-/* ── Stream presets ── */
-.preset-grid {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; margin-bottom: 0.65rem;
+/* ── Clip nav (below conditions) ── */
+.clip-nav { padding: 0.75rem 1rem; background: var(--deep); border-bottom: 1px solid var(--rim); }
+.clip-nav-label { font-family: var(--mono); font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.14em; color: var(--dim); margin-bottom: 0.5rem; }
+.clip-nav-btns { display: flex; gap: 0.4rem; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+.clip-nav-btns::-webkit-scrollbar { display: none; }
+.clip-btn {
+  background: var(--panel); border: 1px solid var(--rim2); border-radius: 8px;
+  color: var(--text); font-size: 0.72rem; font-weight: 600;
+  padding: 6px 12px; cursor: pointer; white-space: nowrap; flex-shrink: 0;
+  transition: border-color 0.15s, background 0.15s;
 }
+.clip-btn.active, .clip-btn:active { background: rgba(0,212,170,0.12); border-color: rgba(0,212,170,0.5); color: var(--wave); }
+
+/* ── Surf report (below clip nav on mobile, in sidebar on desktop) ── */
+.surf-report { padding: 1rem; border-bottom: 1px solid var(--rim); }
+.section-title {
+  font-family: var(--mono); font-size: 0.58rem; text-transform: uppercase;
+  letter-spacing: 0.14em; color: var(--dim); margin-bottom: 0.75rem;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.section-title span { font-size: 0.55rem; color: var(--dim); font-weight: 400; }
+
+.report-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+.report-item { background: var(--panel); border: 1px solid var(--rim); border-radius: 8px; padding: 0.6rem 0.75rem; }
+.report-label { font-family: var(--mono); font-size: 0.52rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--dim); margin-bottom: 0.25rem; }
+.report-val { font-family: var(--mono); font-size: 1rem; font-weight: 700; color: var(--white); line-height: 1.1; }
+.report-val.good { color: var(--wave); }
+.report-val.warn { color: var(--amber); }
+.report-sub { font-size: 0.62rem; color: var(--dim); margin-top: 2px; }
+
+/* ── Sidebar ── */
+.sidebar { background: var(--deep); }
+
+/* All sidebar sections share this pattern */
+.s-section { padding: 1rem; border-bottom: 1px solid var(--rim); }
+
+/* ── Stream input section ── */
+.preset-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; margin-bottom: 0.6rem; }
 .preset-btn {
   background: var(--panel); border: 1px solid var(--rim2);
-  border-radius: 8px; padding: 0.55rem 0.7rem;
+  border-radius: 8px; padding: 0.5rem 0.65rem;
   cursor: pointer; text-align: left; transition: border-color 0.15s, background 0.15s;
 }
 .preset-btn:active { border-color: var(--wave); background: rgba(0,212,170,0.07); }
-.preset-btn-name { font-size: 0.78rem; font-weight: 600; color: var(--white); display: block; margin-bottom: 2px; }
-.preset-btn-url { font-family: var(--mono); font-size: 0.6rem; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+.preset-btn-name { font-size: 0.75rem; font-weight: 600; color: var(--white); display: block; margin-bottom: 2px; }
+.preset-btn-url { font-family: var(--mono); font-size: 0.58rem; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
 
-/* ── Input row ── */
-.input-row { display: flex; gap: 0.45rem; margin-bottom: 0; }
+.input-row { display: flex; gap: 0.4rem; }
 input[type="text"] {
   flex: 1; min-width: 0; background: var(--panel); border: 1px solid var(--rim);
-  border-radius: 10px; color: var(--text); font-family: var(--mono);
-  font-size: 0.73rem; padding: 0.68rem 0.85rem; outline: none;
+  border-radius: 8px; color: var(--text); font-family: var(--mono);
+  font-size: 0.72rem; padding: 0.6rem 0.8rem; outline: none;
   transition: border-color 0.15s, box-shadow 0.15s; -webkit-appearance: none;
 }
 input[type="text"]:focus { border-color: rgba(0,212,170,0.5); box-shadow: 0 0 0 3px var(--waveglow); }
 input[type="text"]::placeholder { color: var(--dim); }
-
 .btn-load {
-  background: var(--wave); color: var(--ink); border: none; border-radius: 10px;
-  font-weight: 800; font-size: 0.78rem; padding: 0 1.1rem;
+  background: var(--wave); color: var(--ink); border: none; border-radius: 8px;
+  font-weight: 800; font-size: 0.75rem; padding: 0 1rem;
   cursor: pointer; white-space: nowrap; flex-shrink: 0;
-  transition: opacity 0.15s, transform 0.1s;
 }
-.btn-load:active { transform: scale(0.95); opacity: 0.85; }
+.btn-load:active { opacity: 0.85; }
 .btn-stop {
   background: transparent; color: var(--danger);
-  border: 1px solid rgba(255,79,79,0.3); border-radius: 10px;
-  font-size: 0.82rem; font-weight: 600; padding: 0 0.85rem;
+  border: 1px solid rgba(255,79,79,0.3); border-radius: 8px;
+  font-size: 0.8rem; font-weight: 600; padding: 0 0.75rem;
   cursor: pointer; white-space: nowrap; flex-shrink: 0;
 }
-.btn-stop:active { background: rgba(255,79,79,0.1); }
+.btn-stop:active { background: rgba(255,79,79,0.08); }
 
 /* ── Collapsible ── */
 .collapsible-head {
   display: flex; align-items: center; justify-content: space-between;
-  cursor: pointer; user-select: none; padding: 0.1rem 0;
+  cursor: pointer; user-select: none;
 }
-.collapsible-head .eyebrow { margin-bottom: 0; }
-.chevron {
-  font-size: 0.7rem; color: var(--dim); transition: transform 0.2s;
-  font-family: var(--mono);
-}
+.collapsible-head .section-title { margin-bottom: 0; flex: 1; }
+.chevron { font-size: 0.65rem; color: var(--dim); transition: transform 0.25s; font-family: var(--mono); margin-left: 0.5rem; }
 .chevron.open { transform: rotate(180deg); }
-.collapsible-body { overflow: hidden; transition: max-height 0.3s ease, opacity 0.3s; }
-.collapsible-body.closed { max-height: 0 !important; opacity: 0; }
+.collapsible-body { overflow: hidden; transition: max-height 0.3s ease, opacity 0.25s; }
+.collapsible-body.closed { max-height: 0 !important; opacity: 0; pointer-events: none; }
 
 /* ── Checklist ── */
-.checklist { display: flex; flex-direction: column; gap: 0.4rem; margin-top: 0.65rem; }
+.checklist { display: flex; flex-direction: column; gap: 0.35rem; margin-top: 0.65rem; }
 .check-item {
-  display: flex; align-items: flex-start; gap: 0.65rem;
+  display: flex; align-items: flex-start; gap: 0.6rem;
   background: var(--panel); border: 1px solid var(--rim);
-  border-radius: 9px; padding: 0.65rem 0.8rem;
-  transition: border-color 0.2s;
+  border-radius: 8px; padding: 0.6rem 0.75rem; transition: border-color 0.2s;
 }
 .check-item.pass { border-color: rgba(0,212,170,0.3); }
 .check-item.fail { border-color: rgba(255,79,79,0.3); }
 .check-item.testing { border-color: rgba(245,166,35,0.3); }
-
 .check-dot {
-  width: 8px; height: 8px; border-radius: 50%;
-  background: var(--dim); flex-shrink: 0; margin-top: 4px;
-  transition: background 0.2s;
+  width: 7px; height: 7px; border-radius: 50%; background: var(--dim);
+  flex-shrink: 0; margin-top: 5px; transition: background 0.2s;
 }
-.check-item.pass .check-dot { background: var(--pass); box-shadow: 0 0 6px var(--pass); }
+.check-item.pass .check-dot { background: var(--pass); box-shadow: 0 0 5px var(--pass); }
 .check-item.fail .check-dot { background: var(--fail); }
 .check-item.testing .check-dot { background: var(--testing); animation: livepulse 1s infinite; }
-
 .check-body { flex: 1; min-width: 0; }
-.check-label { font-size: 0.8rem; font-weight: 600; color: var(--white); margin-bottom: 2px; }
-.check-status {
-  font-family: var(--mono); font-size: 0.62rem; text-transform: uppercase;
-  letter-spacing: 0.08em; color: var(--dim);
-}
+.check-label { font-size: 0.76rem; font-weight: 600; color: var(--white); margin-bottom: 1px; }
+.check-status { font-family: var(--mono); font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--dim); }
 .check-item.pass .check-status { color: var(--pass); }
 .check-item.fail .check-status { color: var(--fail); }
 .check-item.testing .check-status { color: var(--testing); }
-
 .check-btn {
-  font-family: var(--mono); font-size: 0.62rem; color: var(--dim);
+  font-family: var(--mono); font-size: 0.58rem; color: var(--dim);
   background: rgba(255,255,255,0.05); border: 1px solid var(--rim);
-  border-radius: 6px; padding: 3px 9px; cursor: pointer; white-space: nowrap;
+  border-radius: 5px; padding: 3px 8px; cursor: pointer; white-space: nowrap;
   flex-shrink: 0; align-self: center;
 }
-.check-btn:active { color: var(--wave); border-color: rgba(0,212,170,0.4); }
+.check-btn:active { color: var(--wave); }
 
-/* ── Camera metadata card ── */
-.meta-grid {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; margin-top: 0.65rem;
-}
-.meta-item {
-  background: var(--panel); border: 1px solid var(--rim);
-  border-radius: 8px; padding: 0.6rem 0.75rem;
-}
-.meta-label { font-family: var(--mono); font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--dim); margin-bottom: 0.2rem; }
-.meta-val { font-family: var(--mono); font-size: 0.75rem; color: var(--white); word-break: break-word; }
+/* ── Camera metadata ── */
+.meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; margin-top: 0.65rem; }
+.meta-item { background: var(--panel); border: 1px solid var(--rim); border-radius: 8px; padding: 0.55rem 0.7rem; }
+.meta-label { font-family: var(--mono); font-size: 0.52rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--dim); margin-bottom: 0.2rem; }
+.meta-val { font-family: var(--mono); font-size: 0.72rem; color: var(--white); word-break: break-word; }
 .meta-val.dim { color: var(--dim); }
 .heartbeat { display: inline-flex; align-items: center; gap: 5px; }
 .heartbeat::before { content:''; width:5px; height:5px; border-radius:50%; background:var(--dim); display:inline-block; }
 .heartbeat.live::before { background: var(--wave); animation: livepulse 1.6s infinite; }
 
-/* ── Log ── */
-.log-head { display: flex; align-items: center; justify-content: space-between; }
-.btn-clr { font-family: var(--mono); font-size: 0.62rem; color: var(--dim); background: none; border: none; cursor: pointer; padding: 2px 0; }
-.log-box {
-  background: var(--panel); border: 1px solid var(--rim); border-radius: 10px;
-  padding: 0.65rem 0.8rem; max-height: 150px; overflow-y: auto;
-  scrollbar-width: thin; scrollbar-color: var(--rim) transparent;
-  margin-top: 0.55rem;
+/* ── System health ── */
+.health-grid { display: flex; flex-direction: column; gap: 0.35rem; margin-top: 0.65rem; }
+.health-row {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--panel); border: 1px solid var(--rim);
+  border-radius: 8px; padding: 0.55rem 0.75rem;
 }
-.log-row { display: flex; gap: 0.55rem; font-family: var(--mono); font-size: 0.68rem; line-height: 1.8; }
+.health-key { font-size: 0.76rem; color: var(--text); }
+.health-val { font-family: var(--mono); font-size: 0.7rem; color: var(--dim); }
+.health-val.ok { color: var(--wave); }
+.health-val.warn { color: var(--amber); }
+.health-val.err { color: var(--danger); }
+
+/* ── Diagnostics / log ── */
+.cards { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; margin-top: 0.65rem; }
+.card { background: var(--panel); border: 1px solid var(--rim); border-radius: 8px; padding: 0.65rem 0.75rem; }
+.card-lbl { font-family: var(--mono); font-size: 0.52rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--dim); margin-bottom: 0.25rem; }
+.card-val { font-family: var(--mono); font-size: 0.76rem; color: var(--dim); word-break: break-all; }
+.card-val.lit { color: var(--white); }
+.card-val.good { color: var(--wave); }
+
+.log-head { display: flex; align-items: center; justify-content: space-between; margin-top: 0.85rem; margin-bottom: 0.4rem; }
+.btn-clr { font-family: var(--mono); font-size: 0.6rem; color: var(--dim); background: none; border: none; cursor: pointer; }
+.log-box {
+  background: var(--panel); border: 1px solid var(--rim); border-radius: 8px;
+  padding: 0.6rem 0.75rem; max-height: 140px; overflow-y: auto;
+  scrollbar-width: thin; scrollbar-color: var(--rim) transparent;
+}
+.log-row { display: flex; gap: 0.5rem; font-family: var(--mono); font-size: 0.67rem; line-height: 1.8; }
 .lt { color: var(--dim); flex-shrink: 0; }
 .lok { color: var(--wave); }
 .lerr { color: var(--danger); }
 .linf { color: var(--text); }
-.log-mt { font-family: var(--mono); font-size: 0.68rem; color: var(--dim); text-align: center; padding: 0.75rem 0; }
+.log-mt { font-family: var(--mono); font-size: 0.67rem; color: var(--dim); text-align: center; padding: 0.6rem 0; }
 
-/* ── Info cards ── */
-.cards { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-top: 0.65rem; }
-.card { background: var(--panel); border: 1px solid var(--rim); border-radius: 10px; padding: 0.75rem 0.85rem; }
-.card-lbl { font-family: var(--mono); font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--dim); margin-bottom: 0.28rem; }
-.card-val { font-family: var(--mono); font-size: 0.8rem; color: var(--dim); word-break: break-all; }
-.card-val.lit { color: var(--white); }
-.card-val.good { color: var(--wave); }
-
-/* ── Subscriber preview ── */
-.sub-tabs { display: flex; gap: 0.4rem; margin-bottom: 0.75rem; margin-top: 0.65rem; }
-.sub-tab {
-  font-family: var(--mono); font-size: 0.65rem; padding: 5px 14px;
-  border-radius: 100px; cursor: pointer; border: 1px solid var(--rim);
-  background: var(--panel); color: var(--dim); transition: all 0.15s;
-}
-.sub-tab.active { background: rgba(0,212,170,0.12); border-color: rgba(0,212,170,0.4); color: var(--wave); }
-
-.sub-panel { display: none; }
-.sub-panel.show { display: block; }
-
-.sub-card {
+/* ── Membership plans ── */
+.plans-grid { display: flex; flex-direction: column; gap: 0.6rem; margin-top: 0.65rem; }
+.plan-card {
   background: var(--panel); border: 1px solid var(--rim);
-  border-radius: 12px; overflow: hidden;
+  border-radius: 10px; overflow: hidden;
 }
-.sub-card-head {
-  padding: 0.8rem 1rem; border-bottom: 1px solid var(--rim);
+.plan-card.featured { border-color: rgba(0,212,170,0.4); }
+.plan-head {
   display: flex; align-items: center; justify-content: space-between;
+  padding: 0.75rem 0.9rem; border-bottom: 1px solid var(--rim);
 }
-.sub-card-title { font-weight: 700; font-size: 0.9rem; color: var(--white); }
-.sub-badge {
-  font-family: var(--mono); font-size: 0.6rem; font-weight: 600;
+.plan-name { font-weight: 700; font-size: 0.9rem; color: var(--white); }
+.plan-price { font-family: var(--mono); font-size: 0.8rem; color: var(--wave); font-weight: 700; }
+.plan-price.dim { color: var(--dim); }
+.plan-badge {
+  font-family: var(--mono); font-size: 0.55rem; font-weight: 600;
   letter-spacing: 0.1em; text-transform: uppercase;
-  padding: 3px 9px; border-radius: 100px;
+  padding: 2px 8px; border-radius: 100px;
+  background: rgba(0,212,170,0.15); color: var(--wave);
+  border: 1px solid rgba(0,212,170,0.3);
 }
-.sub-badge.free { background: rgba(255,255,255,0.08); color: var(--dim); }
-.sub-badge.paid { background: rgba(0,212,170,0.15); color: var(--wave); border: 1px solid rgba(0,212,170,0.3); }
-
-.sub-feature-list { padding: 0.75rem 1rem; }
-.sub-feature {
-  display: flex; align-items: center; gap: 0.6rem;
-  font-size: 0.8rem; padding: 0.4rem 0;
+.plan-features { padding: 0.6rem 0.9rem; }
+.plan-feature {
+  display: flex; align-items: center; gap: 0.55rem;
+  font-size: 0.76rem; padding: 0.3rem 0;
   border-bottom: 1px solid var(--rim); color: var(--text);
 }
-.sub-feature:last-child { border-bottom: none; }
-.sub-feature .icon { font-size: 0.85rem; flex-shrink: 0; }
-.sub-feature.locked { color: var(--dim); }
-
-.sub-cta {
-  margin: 0 1rem 1rem; padding: 0.7rem; border-radius: 9px;
-  text-align: center; font-size: 0.8rem; font-weight: 600; cursor: pointer;
-  border: none; transition: opacity 0.15s;
+.plan-feature:last-child { border-bottom: none; }
+.plan-feature.dim { color: var(--dim); }
+.plan-icon { font-size: 0.75rem; flex-shrink: 0; width: 16px; }
+.plan-cta {
+  margin: 0 0.9rem 0.9rem; padding: 0.65rem; border-radius: 8px;
+  text-align: center; font-size: 0.78rem; font-weight: 700; cursor: pointer;
+  border: none; width: calc(100% - 1.8rem); transition: opacity 0.15s;
 }
-.sub-cta.free-cta { background: rgba(255,255,255,0.07); color: var(--dim); }
-.sub-cta.paid-cta { background: var(--wave); color: var(--ink); }
-.sub-cta:active { opacity: 0.8; }
-
-.add-break-card {
-  background: var(--panel); border: 1px dashed rgba(0,212,170,0.3);
-  border-radius: 12px; padding: 1.25rem 1rem; text-align: center; cursor: pointer;
-  transition: background 0.15s;
-}
-.add-break-card:active { background: rgba(0,212,170,0.06); }
-.add-break-icon { font-size: 1.5rem; margin-bottom: 0.4rem; }
-.add-break-title { font-weight: 700; font-size: 0.85rem; color: var(--white); margin-bottom: 0.25rem; }
-.add-break-sub { font-size: 0.75rem; color: var(--dim); }
-.add-break-price { font-family: var(--mono); font-size: 0.72rem; color: var(--wave); margin-top: 0.5rem; }
+.plan-cta.primary { background: var(--wave); color: var(--ink); }
+.plan-cta.ghost { background: rgba(255,255,255,0.06); color: var(--dim); }
+.plan-cta:active { opacity: 0.8; }
 
 /* ── Footer ── */
-.foot { margin-top: 2rem; padding: 0 1rem; text-align: center; font-family: var(--mono); font-size: 0.6rem; color: var(--dim); letter-spacing: 0.06em; }
+.foot { padding: 1.5rem 1.25rem; text-align: center; font-family: var(--mono); font-size: 0.58rem; color: var(--dim); letter-spacing: 0.06em; border-top: 1px solid var(--rim); }
+
+/* ── Utility ── */
+.rule { height: 1px; background: var(--rim); margin: 0.85rem 0; }
+.small-btn {
+  font-family: var(--mono); font-size: 0.65rem; font-weight: 600;
+  background: var(--panel); border: 1px solid var(--rim2); border-radius: 7px;
+  color: var(--text); padding: 5px 12px; cursor: pointer; transition: border-color 0.15s;
+}
+.small-btn:active { border-color: var(--wave); color: var(--wave); }
 </style>
 </head>
 <body>
 <div class="hero-bg"></div>
-<div class="wrap">
+<div class="page">
 
-  <!-- Header -->
+  <!-- Sticky top bar -->
   <div class="top-bar">
     <div class="logo">
       <svg class="logo-wave" viewBox="0 0 28 28" fill="none">
@@ -357,254 +398,343 @@ input[type="text"]::placeholder { color: var(--dim); }
       </svg>
       <span class="logo-text">SURF<em>CAM</em></span>
     </div>
-    <div class="live-pill offline" id="livePill">
-      <span class="pip"></span><span id="pillLbl">No stream</span>
-    </div>
-  </div>
-
-  <!-- Break name -->
-  <div class="break-header">
-    <div class="break-name">Bombo</div>
-    <div class="break-sub">Kiama · NSW · Team test build</div>
-  </div>
-
-  <!-- Video -->
-  <div class="video-wrap" id="vWrap">
-    <video id="video" controls playsinline></video>
-    <div class="vid-tag" id="vidTag">Bombo · Kiama</div>
-    <div class="vid-stamp" id="vidStamp"></div>
-    <div class="vid-overlay" id="vidOverlay">
-      <div class="idle-icon">🌊</div>
-      <div class="idle-label" id="idleLabel">No stream loaded — paste an HLS URL or pick a local video</div>
-      <div class="error-hint" id="errorHint">
-        <div class="error-title" id="errorTitle"></div>
-        <div class="error-tip" id="errorTip"></div>
+    <div class="top-right">
+      <div class="live-pill offline" id="livePill">
+        <span class="pip"></span><span id="pillLbl">No stream</span>
       </div>
-      <label class="choose-btn">Choose video<input type="file" id="fileInput" accept="video/*"></label>
     </div>
   </div>
 
-  <!-- Conditions -->
-  <div class="conditions">
-    <div class="cond"><div class="cond-val" id="cWind">—</div><div class="cond-label">Wind</div></div>
-    <div class="cond"><div class="cond-val" id="cSwell">—</div><div class="cond-label">Swell</div></div>
-    <div class="cond"><div class="cond-val" id="cTide">—</div><div class="cond-label">Tide</div></div>
-    <div class="cond"><div class="cond-val" id="cQual">—</div><div class="cond-label">Rating</div></div>
-  </div>
+  <!-- 70/30 layout -->
+  <div class="main-layout">
 
-  <!-- Stream source -->
-  <div class="section">
-    <div class="eyebrow">Stream source</div>
-    <div class="preset-grid">
-      <button class="preset-btn" onclick="loadPreset('hls')">
-        <span class="preset-btn-name">Sample HLS</span>
-        <span class="preset-btn-url">test-streams.mux.dev</span>
-      </button>
-      <button class="preset-btn" onclick="loadPreset('mp4')">
-        <span class="preset-btn-name">Local test MP4</span>
-        <span class="preset-btn-url">commondatastorage…</span>
-      </button>
-      <button class="preset-btn" onclick="loadPreset('bombo')">
-        <span class="preset-btn-name">📍 Bombo</span>
-        <span class="preset-btn-url">— not connected yet —</span>
-      </button>
-      <button class="preset-btn" onclick="loadPreset('gerroa')">
-        <span class="preset-btn-name">📍 Gerroa</span>
-        <span class="preset-btn-url">— not connected yet —</span>
-      </button>
-    </div>
-    <div class="input-row">
-      <input type="text" id="urlInput" placeholder="Paste HLS (.m3u8) or MP4 URL…"
-        autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"/>
-      <button class="btn-load" onclick="loadStream()">Load</button>
-      <button class="btn-stop" onclick="stopStream()">✕</button>
-    </div>
-  </div>
+    <!-- ══ VIDEO COLUMN (70%) ══ -->
+    <div class="video-column">
 
-  <div class="rule"></div>
+      <!-- Break bar -->
+      <div class="break-bar">
+        <div>
+          <div class="break-name">Bombo</div>
+          <div class="break-loc">Kiama · NSW · 34.6721° S, 150.8530° E</div>
+        </div>
+        <div class="live-pill offline" id="livePill2" style="font-size:0.6rem;padding:3px 9px">
+          <span class="pip"></span><span id="pillLbl2">Offline</span>
+        </div>
+      </div>
 
-  <!-- Connection checklist -->
-  <div class="section">
-    <div class="collapsible-head" onclick="toggleSection('checklist')">
-      <div class="eyebrow">Connection checklist</div>
-      <span class="chevron open" id="chevron-checklist">▼</span>
-    </div>
-    <div class="collapsible-body" id="body-checklist" style="max-height:600px">
-      <div class="checklist">
-        <div class="check-item" id="chk-lan">
-          <div class="check-dot"></div>
-          <div class="check-body">
-            <div class="check-label">Camera reachable on LAN</div>
-            <div class="check-status" id="chk-lan-status">Not started</div>
+      <!-- Video player -->
+      <div class="video-wrap" id="vWrap">
+        <video id="video" controls playsinline></video>
+        <div class="vid-tag" id="vidTag">Bombo · Kiama</div>
+        <div class="vid-stamp" id="vidStamp"></div>
+
+        <!-- No-stream overlay with snapshot fallback -->
+        <div class="vid-overlay" id="vidOverlay">
+          <div class="snapshot-wrap">
+            <div class="snapshot-img" id="snapshotImg">
+              <img id="snapshotImgEl" src="" alt="Latest snapshot">
+            </div>
+            <div class="snapshot-meta">
+              <div class="snapshot-title" id="overlayTitle">Live stream unavailable</div>
+              <div class="snapshot-time" id="overlayTime">Last snapshot: — </div>
+              <div class="error-hint" id="errorHint">
+                <div class="error-title" id="errorTitle"></div>
+                <div class="error-tip" id="errorTip"></div>
+              </div>
+              <div class="snapshot-actions" style="margin-top:0.65rem">
+                <button class="btn-refresh" onclick="refreshSnapshot()">↻ Refresh snapshot</button>
+                <label class="choose-btn">Choose video<input type="file" id="fileInput" accept="video/*"></label>
+              </div>
+            </div>
           </div>
-          <button class="check-btn" onclick="cycleCheck('lan')">Update</button>
         </div>
-        <div class="check-item" id="chk-rtsp">
-          <div class="check-dot"></div>
-          <div class="check-body">
-            <div class="check-label">RTSP URL tested in VLC</div>
-            <div class="check-status" id="chk-rtsp-status">Not started</div>
+      </div>
+
+      <!-- Conditions strip -->
+      <div class="conditions">
+        <div class="cond"><div class="cond-val" id="cWind">—</div><div class="cond-label">Wind</div></div>
+        <div class="cond"><div class="cond-val" id="cSwell">—</div><div class="cond-label">Swell</div></div>
+        <div class="cond"><div class="cond-val" id="cTide">—</div><div class="cond-label">Tide</div></div>
+        <div class="cond"><div class="cond-val" id="cQual">—</div><div class="cond-label">Rating</div></div>
+      </div>
+
+      <!-- Clip navigation -->
+      <div class="clip-nav">
+        <div class="clip-nav-label">Watch clips</div>
+        <div class="clip-nav-btns">
+          <button class="clip-btn active" onclick="setClipBtn(this,'live')">▶ Live</button>
+          <button class="clip-btn" onclick="setClipBtn(this,'last6')">Last 6 min</button>
+          <button class="clip-btn" onclick="setClipBtn(this,'prev6')">Previous 6 min</button>
+          <button class="clip-btn" onclick="setClipBtn(this,'morning')">This morning</button>
+          <button class="clip-btn" onclick="setClipBtn(this,'highlights')">Today highlights</button>
+        </div>
+      </div>
+
+      <!-- Surf report (visible on mobile here, hidden on desktop — shown in sidebar) -->
+      <div class="surf-report" id="surfReportMobile">
+        <div class="section-title">Surf report <span>Placeholder data · BOM + AI integration coming</span></div>
+        <div class="report-grid">
+          <div class="report-item">
+            <div class="report-label">Wave Height</div>
+            <div class="report-val good" id="rWaveH">1.2m</div>
+            <div class="report-sub">Overhead sets</div>
           </div>
-          <button class="check-btn" onclick="cycleCheck('rtsp')">Update</button>
-        </div>
-        <div class="check-item" id="chk-server">
-          <div class="check-dot"></div>
-          <div class="check-body">
-            <div class="check-label">Server receiving RTSP</div>
-            <div class="check-status" id="chk-server-status">Not started</div>
+          <div class="report-item">
+            <div class="report-label">Wave Quality</div>
+            <div class="report-val good" id="rWaveQ">★★★☆</div>
+            <div class="report-sub">Clean &amp; punchy</div>
           </div>
-          <button class="check-btn" onclick="cycleCheck('server')">Update</button>
-        </div>
-        <div class="check-item" id="chk-hls">
-          <div class="check-dot"></div>
-          <div class="check-body">
-            <div class="check-label">HLS playlist generated</div>
-            <div class="check-status" id="chk-hls-status">Not started</div>
+          <div class="report-item">
+            <div class="report-label">Wind</div>
+            <div class="report-val" id="rWind">12 kts SE</div>
+            <div class="report-sub">Light offshore</div>
           </div>
-          <button class="check-btn" onclick="cycleCheck('hls')">Update</button>
-        </div>
-        <div class="check-item" id="chk-browser">
-          <div class="check-dot"></div>
-          <div class="check-body">
-            <div class="check-label">Browser loading HLS</div>
-            <div class="check-status" id="chk-browser-status">Not started</div>
+          <div class="report-item">
+            <div class="report-label">Wind Speed</div>
+            <div class="report-val" id="rWindSpd">12 kts</div>
+            <div class="report-sub">Freshening to 18</div>
           </div>
-          <button class="check-btn" onclick="cycleCheck('browser')">Update</button>
+          <div class="report-item">
+            <div class="report-label">Tide</div>
+            <div class="report-val" id="rTide">+0.4m ↑</div>
+            <div class="report-sub">Incoming · High 12:30</div>
+          </div>
+          <div class="report-item">
+            <div class="report-label">Crowd</div>
+            <div class="report-val warn" id="rCrowd">Moderate</div>
+            <div class="report-sub">~15 surfers</div>
+          </div>
         </div>
       </div>
+
     </div>
+    <!-- end video column -->
+
+    <!-- ══ SIDEBAR (30%) ══ -->
+    <div class="sidebar">
+
+      <!-- Stream source -->
+      <div class="s-section">
+        <div class="section-title">Stream source</div>
+        <div class="preset-grid">
+          <button class="preset-btn" onclick="loadPreset('hls')">
+            <span class="preset-btn-name">Sample HLS</span>
+            <span class="preset-btn-url">test-streams.mux.dev</span>
+          </button>
+          <button class="preset-btn" onclick="loadPreset('mp4')">
+            <span class="preset-btn-name">Test MP4</span>
+            <span class="preset-btn-url">commondatastorage…</span>
+          </button>
+          <button class="preset-btn" onclick="loadPreset('bombo')">
+            <span class="preset-btn-name">📍 Bombo</span>
+            <span class="preset-btn-url">— not live yet —</span>
+          </button>
+          <button class="preset-btn" onclick="loadPreset('gerroa')">
+            <span class="preset-btn-name">📍 Gerroa</span>
+            <span class="preset-btn-url">— not live yet —</span>
+          </button>
+        </div>
+        <div class="input-row">
+          <input type="text" id="urlInput" placeholder="Paste HLS (.m3u8) or MP4 URL…"
+            autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"/>
+          <button class="btn-load" onclick="loadStream()">Load</button>
+          <button class="btn-stop" onclick="stopStream()">✕</button>
+        </div>
+      </div>
+
+      <!-- Surf report desktop (hidden on mobile) -->
+      <div class="s-section" id="surfReportDesktop" style="display:none">
+        <div class="section-title">Surf report <span style="font-size:0.52rem;color:var(--dim)">Placeholder · BOM + AI coming</span></div>
+        <div class="report-grid">
+          <div class="report-item"><div class="report-label">Wave Height</div><div class="report-val good">1.2m</div><div class="report-sub">Overhead sets</div></div>
+          <div class="report-item"><div class="report-label">Quality</div><div class="report-val good">★★★☆</div><div class="report-sub">Clean &amp; punchy</div></div>
+          <div class="report-item"><div class="report-label">Wind</div><div class="report-val">12 kts SE</div><div class="report-sub">Light offshore</div></div>
+          <div class="report-item"><div class="report-label">Tide</div><div class="report-val">+0.4m ↑</div><div class="report-sub">Incoming · High 12:30</div></div>
+          <div class="report-item"><div class="report-label">Crowd</div><div class="report-val warn">Moderate</div><div class="report-sub">~15 surfers</div></div>
+          <div class="report-item"><div class="report-label">Wind Speed</div><div class="report-val">12 kts</div><div class="report-sub">Freshening</div></div>
+        </div>
+        <div style="margin-top:0.5rem">
+          <button class="small-btn" onclick="fakeReport()">Refresh placeholder data</button>
+        </div>
+      </div>
+
+      <!-- Fake conditions (kept) -->
+      <div class="s-section">
+        <div class="section-title">Conditions strip</div>
+        <div style="display:flex;gap:0.4rem;flex-wrap:wrap">
+          <button class="small-btn" onclick="fakeCond()">Generate fake data</button>
+          <button class="small-btn" onclick="clearCond()">Clear</button>
+        </div>
+      </div>
+
+      <!-- Connection checklist -->
+      <div class="s-section">
+        <div class="collapsible-head" onclick="toggleSection('checklist')">
+          <div class="section-title">Connection checklist</div>
+          <span class="chevron open" id="chevron-checklist">▼</span>
+        </div>
+        <div class="collapsible-body" id="body-checklist" style="max-height:600px">
+          <div class="checklist">
+            <div class="check-item" id="chk-lan">
+              <div class="check-dot"></div>
+              <div class="check-body"><div class="check-label">Camera reachable on LAN</div><div class="check-status" id="chk-lan-status">Not started</div></div>
+              <button class="check-btn" onclick="cycleCheck('lan')">Update</button>
+            </div>
+            <div class="check-item" id="chk-rtsp">
+              <div class="check-dot"></div>
+              <div class="check-body"><div class="check-label">RTSP URL tested in VLC</div><div class="check-status" id="chk-rtsp-status">Not started</div></div>
+              <button class="check-btn" onclick="cycleCheck('rtsp')">Update</button>
+            </div>
+            <div class="check-item" id="chk-server">
+              <div class="check-dot"></div>
+              <div class="check-body"><div class="check-label">Server receiving RTSP</div><div class="check-status" id="chk-server-status">Not started</div></div>
+              <button class="check-btn" onclick="cycleCheck('server')">Update</button>
+            </div>
+            <div class="check-item" id="chk-hls">
+              <div class="check-dot"></div>
+              <div class="check-body"><div class="check-label">HLS playlist generated</div><div class="check-status" id="chk-hls-status">Not started</div></div>
+              <button class="check-btn" onclick="cycleCheck('hls')">Update</button>
+            </div>
+            <div class="check-item" id="chk-browser">
+              <div class="check-dot"></div>
+              <div class="check-body"><div class="check-label">Browser loading HLS</div><div class="check-status" id="chk-browser-status">Not started</div></div>
+              <button class="check-btn" onclick="cycleCheck('browser')">Update</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Camera metadata -->
+      <div class="s-section">
+        <div class="collapsible-head" onclick="toggleSection('meta')">
+          <div class="section-title">Camera setup</div>
+          <span class="chevron open" id="chevron-meta">▼</span>
+        </div>
+        <div class="collapsible-body" id="body-meta" style="max-height:400px">
+          <div class="meta-grid">
+            <div class="meta-item"><div class="meta-label">Camera</div><div class="meta-val">Hikvision PTZ</div></div>
+            <div class="meta-item"><div class="meta-label">Router</div><div class="meta-val">Teltonika 4G/5G</div></div>
+            <div class="meta-item"><div class="meta-label">Antenna</div><div class="meta-val">External MIMO</div></div>
+            <div class="meta-item"><div class="meta-label">Power</div><div class="meta-val">PoE Injector</div></div>
+            <div class="meta-item"><div class="meta-label">Site</div><div class="meta-val">Test location</div></div>
+            <div class="meta-item"><div class="meta-label">Format</div><div class="meta-val">RTSP → HLS</div></div>
+            <div class="meta-item" style="grid-column:1/-1">
+              <div class="meta-label">Last heartbeat</div>
+              <div class="meta-val dim"><span class="heartbeat" id="heartbeat">No signal yet</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- System health -->
+      <div class="s-section">
+        <div class="collapsible-head" onclick="toggleSection('health')">
+          <div class="section-title">System health</div>
+          <span class="chevron" id="chevron-health">▼</span>
+        </div>
+        <div class="collapsible-body closed" id="body-health" style="max-height:0">
+          <div class="health-grid">
+            <div class="health-row"><span class="health-key">Camera status</span><span class="health-val warn">Connecting…</span></div>
+            <div class="health-row"><span class="health-key">Router status</span><span class="health-val ok">Online</span></div>
+            <div class="health-row"><span class="health-key">Stream server</span><span class="health-val err">Not configured</span></div>
+            <div class="health-row"><span class="health-key">Disk space</span><span class="health-val ok">42 GB free</span></div>
+            <div class="health-row"><span class="health-key">CPU usage</span><span class="health-val ok">12%</span></div>
+            <div class="health-row"><span class="health-key">Last stream restart</span><span class="health-val dim">—</span></div>
+            <div class="health-row"><span class="health-key">Uptime</span><span class="health-val dim">—</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Diagnostics + log (collapsible) -->
+      <div class="s-section">
+        <div class="collapsible-head" onclick="toggleSection('diag')">
+          <div class="section-title">Diagnostics &amp; log</div>
+          <span class="chevron open" id="chevron-diag">▼</span>
+        </div>
+        <div class="collapsible-body" id="body-diag" style="max-height:600px">
+          <div class="cards">
+            <div class="card"><div class="card-lbl">Type</div><div class="card-val" id="iType">—</div></div>
+            <div class="card"><div class="card-lbl">Loaded</div><div class="card-val" id="iTime">—</div></div>
+            <div class="card"><div class="card-lbl">Resolution</div><div class="card-val" id="iRes">—</div></div>
+            <div class="card"><div class="card-lbl">HLS.js</div><div class="card-val good" id="iHls">—</div></div>
+          </div>
+          <div class="log-head">
+            <div style="font-family:var(--mono);font-size:0.55rem;text-transform:uppercase;letter-spacing:0.14em;color:var(--dim)">Test log</div>
+            <button class="btn-clr" onclick="clearLog()">Clear</button>
+          </div>
+          <div class="log-box" id="logBox">
+            <div class="log-mt" id="logMt">No events yet</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Membership plans -->
+      <div class="s-section">
+        <div class="section-title">Membership plans</div>
+        <div class="plans-grid">
+          <!-- Free -->
+          <div class="plan-card">
+            <div class="plan-head">
+              <div class="plan-name">Free</div>
+              <div class="plan-price dim">$0</div>
+            </div>
+            <div class="plan-features">
+              <div class="plan-feature"><span class="plan-icon">✅</span>Latest snapshot</div>
+              <div class="plan-feature"><span class="plan-icon">✅</span>Limited clips</div>
+              <div class="plan-feature dim"><span class="plan-icon">📢</span>With advertising</div>
+              <div class="plan-feature dim"><span class="plan-icon">🔒</span>Full archive</div>
+              <div class="plan-feature dim"><span class="plan-icon">🔒</span>AI analysis</div>
+            </div>
+            <button class="plan-cta ghost">Current plan</button>
+          </div>
+          <!-- Plus -->
+          <div class="plan-card featured">
+            <div class="plan-head">
+              <div>
+                <div class="plan-name">Plus</div>
+                <div class="plan-badge">Popular</div>
+              </div>
+              <div class="plan-price">$9.99<span style="font-size:0.6rem;color:var(--dim)">/mo</span></div>
+            </div>
+            <div class="plan-features">
+              <div class="plan-feature"><span class="plan-icon">✅</span>Recent clips</div>
+              <div class="plan-feature"><span class="plan-icon">✅</span>Better replay access</div>
+              <div class="plan-feature"><span class="plan-icon">✅</span>Reduced advertising</div>
+              <div class="plan-feature dim"><span class="plan-icon">🔒</span>Full archive</div>
+              <div class="plan-feature dim"><span class="plan-icon">🔒</span>AI wave analysis</div>
+            </div>
+            <button class="plan-cta primary">Subscribe →</button>
+          </div>
+          <!-- Premium -->
+          <div class="plan-card">
+            <div class="plan-head">
+              <div class="plan-name">Premium</div>
+              <div class="plan-price">$19.99<span style="font-size:0.6rem;color:var(--dim)">/mo</span></div>
+            </div>
+            <div class="plan-features">
+              <div class="plan-feature"><span class="plan-icon">✅</span>Full clip archive</div>
+              <div class="plan-feature"><span class="plan-icon">✅</span>No advertising</div>
+              <div class="plan-feature"><span class="plan-icon">✅</span>AI wave analysis</div>
+              <div class="plan-feature"><span class="plan-icon">✅</span>Early access features</div>
+              <div class="plan-feature"><span class="plan-icon">➕</span>Extra breaks +$4.99</div>
+            </div>
+            <button class="plan-cta primary">Subscribe →</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="foot">SURFCAM · TEAM TEST · NOT FOR PUBLIC DISTRIBUTION</div>
+    </div>
+    <!-- end sidebar -->
+
   </div>
-
-  <div class="rule"></div>
-
-  <!-- Camera metadata -->
-  <div class="section">
-    <div class="collapsible-head" onclick="toggleSection('meta')">
-      <div class="eyebrow">Camera setup</div>
-      <span class="chevron open" id="chevron-meta">▼</span>
-    </div>
-    <div class="collapsible-body" id="body-meta" style="max-height:400px">
-      <div class="meta-grid">
-        <div class="meta-item"><div class="meta-label">Camera</div><div class="meta-val">Hikvision PTZ</div></div>
-        <div class="meta-item"><div class="meta-label">Router</div><div class="meta-val">Teltonika 4G/5G</div></div>
-        <div class="meta-item"><div class="meta-label">Antenna</div><div class="meta-val">External MIMO</div></div>
-        <div class="meta-item"><div class="meta-label">Power</div><div class="meta-val">PoE Injector</div></div>
-        <div class="meta-item"><div class="meta-label">Site</div><div class="meta-val">Test location</div></div>
-        <div class="meta-item"><div class="meta-label">Format</div><div class="meta-val">RTSP → HLS</div></div>
-        <div class="meta-item" style="grid-column:1/-1">
-          <div class="meta-label">Last heartbeat</div>
-          <div class="meta-val dim"><span class="heartbeat" id="heartbeat">No signal yet</span></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="rule"></div>
-
-  <!-- Fake conditions -->
-  <div class="section">
-    <div class="eyebrow">Conditions</div>
-    <div style="display:flex;gap:0.4rem;flex-wrap:wrap;margin-top:0.55rem">
-      <button class="btn-stop" style="font-size:0.72rem;padding:6px 14px;border-radius:8px" onclick="fakeCond()">Generate fake conditions</button>
-      <button class="btn-stop" style="font-size:0.72rem;padding:6px 14px;border-radius:8px" onclick="clearCond()">Clear</button>
-    </div>
-  </div>
-
-  <div class="rule"></div>
-
-  <!-- Diagnostics + log -->
-  <div class="section">
-    <div class="collapsible-head" onclick="toggleSection('diag')">
-      <div class="eyebrow">Diagnostics &amp; log</div>
-      <span class="chevron open" id="chevron-diag">▼</span>
-    </div>
-    <div class="collapsible-body" id="body-diag" style="max-height:600px">
-      <div class="cards">
-        <div class="card"><div class="card-lbl">Type</div><div class="card-val" id="iType">—</div></div>
-        <div class="card"><div class="card-lbl">Loaded</div><div class="card-val" id="iTime">—</div></div>
-        <div class="card"><div class="card-lbl">Resolution</div><div class="card-val" id="iRes">—</div></div>
-        <div class="card"><div class="card-lbl">HLS.js</div><div class="card-val good" id="iHls">—</div></div>
-      </div>
-      <div class="log-head" style="margin-top:0.9rem">
-        <div class="eyebrow" style="margin-bottom:0">Test log</div>
-        <button class="btn-clr" onclick="clearLog()">Clear</button>
-      </div>
-      <div class="log-box" id="logBox">
-        <div class="log-mt" id="logMt">No events yet</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="rule"></div>
-
-  <!-- Subscriber preview -->
-  <div class="section">
-    <div class="eyebrow">Subscription preview</div>
-    <div class="sub-tabs">
-      <button class="sub-tab active" onclick="showSub('free')">Free</button>
-      <button class="sub-tab" onclick="showSub('paid')">Subscriber</button>
-      <button class="sub-tab" onclick="showSub('add')">Add a break</button>
-    </div>
-
-    <!-- Free -->
-    <div class="sub-panel show" id="sub-free">
-      <div class="sub-card">
-        <div class="sub-card-head">
-          <div class="sub-card-title">Free preview</div>
-          <div class="sub-badge free">Free</div>
-        </div>
-        <div class="sub-feature-list">
-          <div class="sub-feature"><span class="icon">✅</span> Latest clip (last 6 min)</div>
-          <div class="sub-feature"><span class="icon">✅</span> Basic conditions</div>
-          <div class="sub-feature locked"><span class="icon">🔒</span> Full day archive</div>
-          <div class="sub-feature locked"><span class="icon">🔒</span> Multiple breaks</div>
-          <div class="sub-feature locked"><span class="icon">🔒</span> AI wave analysis</div>
-          <div class="sub-feature locked"><span class="icon">🔒</span> Wind &amp; tide charts</div>
-        </div>
-        <button class="sub-cta paid-cta">Subscribe · $9.99/mo →</button>
-      </div>
-    </div>
-
-    <!-- Paid -->
-    <div class="sub-panel" id="sub-paid">
-      <div class="sub-card">
-        <div class="sub-card-head">
-          <div class="sub-card-title">Subscriber</div>
-          <div class="sub-badge paid">Pro</div>
-        </div>
-        <div class="sub-feature-list">
-          <div class="sub-feature"><span class="icon">✅</span> Latest clip (last 6 min)</div>
-          <div class="sub-feature"><span class="icon">✅</span> Full day archive</div>
-          <div class="sub-feature"><span class="icon">✅</span> All conditions data</div>
-          <div class="sub-feature"><span class="icon">✅</span> Wind &amp; tide charts</div>
-          <div class="sub-feature"><span class="icon">✅</span> AI wave analysis</div>
-          <div class="sub-feature"><span class="icon">✅</span> 1 break included</div>
-          <div class="sub-feature locked"><span class="icon">➕</span> Extra breaks — add-on</div>
-        </div>
-        <button class="sub-cta free-cta">Current plan</button>
-      </div>
-    </div>
-
-    <!-- Add break -->
-    <div class="sub-panel" id="sub-add">
-      <div class="add-break-card">
-        <div class="add-break-icon">📍</div>
-        <div class="add-break-title">Add another break</div>
-        <div class="add-break-sub">Get access to Gerroa, Sandon Point, and more as they come online</div>
-        <div class="add-break-price">+ $4.99 / break / month</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="foot">SURFCAM · TEAM TEST · NOT FOR PUBLIC DISTRIBUTION</div>
+  <!-- end main-layout -->
 </div>
 
 <script>
-// ── State ──────────────────────────────────────────────────
+// ── Refs ──────────────────────────────────────────────────
 const video    = document.getElementById('video');
 const overlay  = document.getElementById('vidOverlay');
-const pill     = document.getElementById('livePill');
-const pillLbl  = document.getElementById('pillLbl');
 const urlInput = document.getElementById('urlInput');
 const logBox   = document.getElementById('logBox');
 const logMt    = document.getElementById('logMt');
@@ -613,13 +743,29 @@ const vidTag   = document.getElementById('vidTag');
 
 let hls = null, stampInterval = null;
 
-// ── Pill ───────────────────────────────────────────────────
+// ── Desktop layout: show surf report in sidebar, hide in video column ──
+function applyLayout() {
+  const isDesktop = window.innerWidth >= 900;
+  document.getElementById('surfReportMobile').style.display  = isDesktop ? 'none' : '';
+  document.getElementById('surfReportDesktop').style.display = isDesktop ? '' : 'none';
+}
+applyLayout();
+window.addEventListener('resize', applyLayout);
+
+// ── Pills (two instances) ──────────────────────────────────
 function setPill(state, label) {
-  pill.className = 'live-pill' + (state !== 'live' ? ' ' + state : '');
-  pillLbl.textContent = label;
+  ['livePill','livePill2'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.className = 'live-pill' + (state !== 'live' ? ' '+state : '');
+  });
+  ['pillLbl','pillLbl2'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = label;
+  });
 }
 
-// ── Stamp ──────────────────────────────────────────────────
+// ── Stamp ─────────────────────────────────────────────────
 function startStamp() {
   vidStamp.classList.add('on'); vidTag.classList.add('on');
   const tick = () => {
@@ -634,7 +780,7 @@ function stopStamp() {
   vidStamp.classList.remove('on'); vidTag.classList.remove('on');
 }
 
-// ── Log ────────────────────────────────────────────────────
+// ── Log ───────────────────────────────────────────────────
 function log(msg, type='inf') {
   if (logMt) logMt.style.display = 'none';
   const t = new Date().toLocaleTimeString('en-AU', {hour12:false});
@@ -644,11 +790,9 @@ function log(msg, type='inf') {
   logBox.appendChild(r);
   logBox.scrollTop = logBox.scrollHeight;
 }
-function clearLog() {
-  logBox.innerHTML = '<div class="log-mt" id="logMt">No events yet</div>';
-}
+function clearLog() { logBox.innerHTML = '<div class="log-mt" id="logMt">No events yet</div>'; }
 
-// ── Cards ──────────────────────────────────────────────────
+// ── Cards ─────────────────────────────────────────────────
 function setCard(id, val, cls) {
   const el = document.getElementById(id);
   if (!el) return;
@@ -657,42 +801,51 @@ function setCard(id, val, cls) {
 }
 function resetCards() { ['iType','iTime','iRes'].forEach(id => setCard(id,'—')); }
 
-// ── Error hints ────────────────────────────────────────────
+// ── Error hints ───────────────────────────────────────────
 const ERRORS = {
-  'no-url':    { title:'No HLS URL entered',        tip:'Paste an .m3u8 URL above or tap a preset.' },
-  'not-found': { title:'HLS playlist not found',    tip:'Check the URL is correct and the server is running.' },
-  'cors':      { title:'CORS issue',                tip:'The server needs Access-Control-Allow-Origin headers. Common with self-hosted FFmpeg.' },
-  'offline':   { title:'Camera or server offline',  tip:'Check the camera IP is reachable and FFmpeg is running on the server.' },
-  'format':    { title:'Unsupported stream format',  tip:'Browser can\'t decode this format. Try re-encoding with FFmpeg using H.264 + AAC.' },
-  'generic':   { title:'Stream error',              tip:'Check the test log below for details.' },
+  'no-url':    { title:'No HLS URL entered',       tip:'Paste an .m3u8 URL above or tap a preset.' },
+  'not-found': { title:'HLS playlist not found',   tip:'Check the URL is correct and the server is running.' },
+  'cors':      { title:'CORS error',               tip:'The server needs Access-Control-Allow-Origin headers.' },
+  'offline':   { title:'Camera or server offline', tip:'Check the camera IP is reachable and FFmpeg is running.' },
+  'format':    { title:'Format not supported',     tip:'Re-encode with FFmpeg using H.264 + AAC.' },
+  'generic':   { title:'Stream error',             tip:'Check the test log below for details.' },
 };
-
 function showError(key) {
   const e = ERRORS[key] || ERRORS.generic;
-  document.getElementById('idleLabel').style.display = 'none';
+  document.getElementById('overlayTitle').textContent = 'Live stream unavailable';
   document.getElementById('errorTitle').textContent = e.title;
-  document.getElementById('errorTip').textContent = e.tip;
+  document.getElementById('errorTip').textContent   = e.tip;
   document.getElementById('errorHint').classList.add('show');
 }
 function clearError() {
-  document.getElementById('idleLabel').style.display = '';
+  document.getElementById('overlayTitle').textContent = 'Live stream unavailable';
   document.getElementById('errorHint').classList.remove('show');
 }
 
-// ── Stop ───────────────────────────────────────────────────
+// ── Snapshot fallback ─────────────────────────────────────
+function refreshSnapshot() {
+  const timeEl = document.getElementById('overlayTime');
+  timeEl.textContent = 'Refreshing…';
+  setTimeout(() => {
+    const t = new Date().toLocaleTimeString('en-AU', {hour:'2-digit', minute:'2-digit', hour12:true, timeZone:'Australia/Sydney'});
+    timeEl.textContent = `Last snapshot: ${t} (placeholder)`;
+    log('Snapshot refreshed (placeholder)');
+  }, 800);
+}
+// Set initial snapshot time
+document.getElementById('overlayTime').textContent =
+  `Last snapshot: ${new Date().toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit',hour12:true,timeZone:'Australia/Sydney'})} (placeholder)`;
+
+// ── Stop ──────────────────────────────────────────────────
 function stopStream() {
   if (hls) { hls.destroy(); hls = null; }
-  video.pause();
-  video.removeAttribute('src');
-  video.load();
+  video.pause(); video.removeAttribute('src'); video.load();
   overlay.classList.remove('gone');
   setPill('offline','No stream');
-  stopStamp(); clearError();
-  log('Stream stopped');
-  resetCards();
+  stopStamp(); clearError(); log('Stream stopped'); resetCards();
 }
 
-// ── Conditions ─────────────────────────────────────────────
+// ── Conditions ────────────────────────────────────────────
 const windDirs  = ['N','NE','E','SE','S','SW','W','NW'];
 const qualities = ['★★★★','★★★☆','★★☆☆','Blown out','Glassy'];
 function fakeCond() {
@@ -702,24 +855,35 @@ function fakeCond() {
   const qual  = qualities[Math.floor(Math.random()*qualities.length)];
   ['cWind','cSwell','cTide','cQual'].forEach((id,i)=>{
     const el=document.getElementById(id);
+    if (!el) return;
     el.textContent=[wind,swell,tide,qual][i];
     el.className='cond-val lit';
   });
-  log('Fake conditions generated','inf');
+  log('Fake conditions generated');
 }
 function clearCond() {
   ['cWind','cSwell','cTide','cQual'].forEach(id=>{
-    document.getElementById(id).textContent='—';
-    document.getElementById(id).className='cond-val';
+    const el=document.getElementById(id);
+    if (el) { el.textContent='—'; el.className='cond-val'; }
   });
 }
+function fakeReport() {
+  log('Surf report refreshed (placeholder data)');
+}
 
-// ── Presets ────────────────────────────────────────────────
+// ── Clip nav ──────────────────────────────────────────────
+function setClipBtn(el, key) {
+  document.querySelectorAll('.clip-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  log(`Clip nav: ${key} selected (placeholder)`);
+}
+
+// ── Presets ───────────────────────────────────────────────
 const PRESETS = {
   hls:    'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8',
   mp4:    'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-  bombo:  '',   // placeholder — real URL goes here when camera is live
-  gerroa: '',   // placeholder
+  bombo:  '',
+  gerroa: '',
 };
 function loadPreset(key) {
   const url = PRESETS[key];
@@ -727,14 +891,14 @@ function loadPreset(key) {
     log(`${key.charAt(0).toUpperCase()+key.slice(1)} camera not connected yet`, 'err');
     showError('offline');
     overlay.classList.remove('gone');
-    setPill('offline', 'Not connected');
+    setPill('offline','Not connected');
     return;
   }
   urlInput.value = url;
   loadStream();
 }
 
-// ── Load ───────────────────────────────────────────────────
+// ── Load stream ───────────────────────────────────────────
 function loadStream() {
   const url = urlInput.value.trim();
   if (!url) { log('No URL entered','err'); showError('no-url'); overlay.classList.remove('gone'); return; }
@@ -751,8 +915,7 @@ function loadStream() {
     hls.on(Hls.Events.MANIFEST_PARSED, () => { log('HLS manifest parsed ✓','ok'); play('HLS'); });
     hls.on(Hls.Events.ERROR, (_,d) => {
       if (d.fatal) {
-        const key = d.details?.includes('cors')||d.details?.includes('crossOrigin') ? 'cors'
-                  : d.details?.includes('loadError') ? 'not-found' : 'generic';
+        const key = d.details?.includes('cors') ? 'cors' : d.details?.includes('loadError') ? 'not-found' : 'generic';
         log(`HLS error: ${d.details}`,'err');
         showError(key);
         setPill('offline','Error');
@@ -771,25 +934,21 @@ function loadStream() {
 }
 
 function play(label) {
-  overlay.classList.add('gone');
-  clearError();
+  overlay.classList.add('gone'); clearError();
   video.play().then(() => {
     setPill('live','Live');
     log(`Playing: ${label} ✓`,'ok');
     setCard('iTime', new Date().toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'}), 'lit');
-    startStamp();
-    updateHeartbeat(true);
-    setCheckState('browser','pass');
+    startStamp(); updateHeartbeat(true); setCheckState('browser','pass');
   }).catch(() => {
     setPill('loading','Tap ▶');
     log('Autoplay blocked — tap ▶ on the video');
   });
 }
 
-// ── File picker ────────────────────────────────────────────
+// ── File picker ───────────────────────────────────────────
 document.getElementById('fileInput').addEventListener('change', function() {
-  const f = this.files[0];
-  if (!f) return;
+  const f = this.files[0]; if (!f) return;
   stopStream();
   video.src = URL.createObjectURL(f);
   setCard('iType', `Local ${f.name.split('.').pop().toUpperCase()}`, 'lit');
@@ -797,7 +956,7 @@ document.getElementById('fileInput').addEventListener('change', function() {
   play('Local file');
 });
 
-// ── Video events ───────────────────────────────────────────
+// ── Video events ──────────────────────────────────────────
 video.addEventListener('waiting',  () => setPill('loading','Buffering…'));
 video.addEventListener('playing',  () => { setPill('live','Live'); startStamp(); });
 video.addEventListener('loadedmetadata', () => {
@@ -806,40 +965,35 @@ video.addEventListener('loadedmetadata', () => {
 });
 video.addEventListener('error', () => {
   const m={1:'Aborted',2:'Network error',3:'Decode error',4:'Format not supported'};
-  const code = video.error?.code;
-  const msg  = m[code]||'Unknown error';
-  log(`Video error: ${msg}`,'err');
+  const code=video.error?.code;
+  log(`Video error: ${m[code]||'Unknown'}`,'err');
   showError(code===4?'format':'generic');
   setPill('offline','Error');
-  overlay.classList.remove('gone');
-  stopStamp();
+  overlay.classList.remove('gone'); stopStamp();
 });
-
 urlInput.addEventListener('keydown', e => { if(e.key==='Enter') loadStream(); });
 
-// ── Checklist ──────────────────────────────────────────────
+// ── Checklist ─────────────────────────────────────────────
 const CHECK_STATES = ['not-started','testing','pass','fail'];
 const CHECK_LABELS = {'not-started':'Not started','testing':'Testing…','pass':'Passed ✓','fail':'Failed ✗'};
-const checkState = { lan:'not-started', rtsp:'not-started', server:'not-started', hls:'not-started', browser:'not-started' };
+const checkState = {lan:'not-started',rtsp:'not-started',server:'not-started',hls:'not-started',browser:'not-started'};
 
 function setCheckState(key, state) {
   checkState[key] = state;
   const item = document.getElementById(`chk-${key}`);
   const stat = document.getElementById(`chk-${key}-status`);
   if (!item||!stat) return;
-  item.className = 'check-item' + (state!=='not-started'?' '+state:'');
+  item.className = 'check-item'+(state!=='not-started'?' '+state:'');
   stat.textContent = CHECK_LABELS[state]||state;
 }
-
 function cycleCheck(key) {
-  const cur = checkState[key];
-  const idx = CHECK_STATES.indexOf(cur);
+  const idx = CHECK_STATES.indexOf(checkState[key]);
   const next = CHECK_STATES[(idx+1)%CHECK_STATES.length];
   setCheckState(key, next);
   log(`Checklist: ${key} → ${next}`);
 }
 
-// ── Collapsible ────────────────────────────────────────────
+// ── Collapsible ───────────────────────────────────────────
 function toggleSection(id) {
   const body    = document.getElementById(`body-${id}`);
   const chevron = document.getElementById(`chevron-${id}`);
@@ -847,16 +1001,18 @@ function toggleSection(id) {
   if (isOpen) {
     body.style.maxHeight = body.scrollHeight+'px';
     requestAnimationFrame(() => { body.style.maxHeight='0'; body.classList.add('closed'); });
+    chevron.classList.remove('open');
   } else {
     body.classList.remove('closed');
-    body.style.maxHeight = '600px';
+    body.style.maxHeight = '800px';
+    chevron.classList.add('open');
   }
-  chevron.classList.toggle('open', isOpen ? false : true);
 }
 
-// ── Heartbeat ──────────────────────────────────────────────
+// ── Heartbeat ─────────────────────────────────────────────
 function updateHeartbeat(live) {
   const el = document.getElementById('heartbeat');
+  if (!el) return;
   if (live) {
     el.textContent = new Date().toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
     el.classList.add('live');
@@ -866,15 +1022,7 @@ function updateHeartbeat(live) {
   }
 }
 
-// ── Subscriber tabs ────────────────────────────────────────
-function showSub(key) {
-  document.querySelectorAll('.sub-panel').forEach(p=>p.classList.remove('show'));
-  document.querySelectorAll('.sub-tab').forEach(t=>t.classList.remove('active'));
-  document.getElementById(`sub-${key}`).classList.add('show');
-  event.currentTarget.classList.add('active');
-}
-
-// ── Init ───────────────────────────────────────────────────
+// ── Init ──────────────────────────────────────────────────
 document.getElementById('iHls').textContent = `v${Hls.version}`;
 setPill('offline','No stream');
 </script>
